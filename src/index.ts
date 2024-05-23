@@ -2,6 +2,8 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 
+console.log(process.env.DATABASE_URL);
+
 const app = express();
 app.use(express.json());
 
@@ -12,15 +14,28 @@ app.get("/", (req, res) => {
         message: "Healthy server"
     })
 })
+let tr = 1;
 
 app.post("/", async (req, res) => {
-    await client.user.create({
-        data: {
-            email: req.body.email,
-            name: req.body.name
-        }
-    })
 
+    while(tr){
+        try {
+            await client.user.create({
+                data: {
+                    email: req.body.email,
+                    name: req.body.name
+                }
+            })
+            break;
+        } catch (error) {
+            console.log(error);
+            new Promise((resolve) => {
+                setTimeout(resolve, 1000);
+            })
+            tr--;
+        }
+    }
+    
     res.json({
         message: "Done signing up!"
     })
